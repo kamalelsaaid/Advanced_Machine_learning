@@ -15,6 +15,31 @@
 		w = w + lr(+ve Gredient - -ve Gredient)
 5- repeat 4
 
+
+"""
+Persistent Contrastive Divergence - Restricted Boltzmann Machine (PCD RBM)
+( Stocastic Maximum Likelihood SML )
+
+algo:
+    set lr
+    set k ( num of gibbs steps maybe 1-5 )
+    initialize set of samples from a uniform distribution
+    while not converged do
+        sample from the training set
+        g = (1/m) * sum( delta_log_un_normalized_prob(normalized( x(i) )) )
+
+        for i = 1 to k do 
+            for j = 1 to m do 
+                un_normalized(x(j) ) = gibbs_update( un_normalized(x(j)) )
+        g = g - (1/m) * sum( delta_log_un_normalized_prob(un_normalized(x(i))) )
+        w = w + lr*g
+"""
+
+
+ References :
+
+   - DeepLearningTutorials:   https://github.com/lisa-lab/DeepLearningTutorials
+
 '''
 
 import numpy as np
@@ -31,12 +56,6 @@ def load_X_data():
 
 	return imgs
 
-def load_Y_data():
-	'''
-	To load the labels of the dataset
-	'''
-	pass
-
 def sigmoid_fun(X):
     return 1./(1.+np.exp(-X))
 
@@ -50,25 +69,39 @@ class RBM():
 		c_h = np.zeros(self.hidden_units) # initialize hidden bias with 0s
 		# initialize weights
 
+	def train(self,lr = 0.01,k = 1,epochs=1000,training_data):
+		self.lr = lr
+		# set lr and k (DONE)
+		self.training_data = training_data
+		# initialize set of samples from a uniform distribution
+		'''
+		TODO: change the sampling from the training set to initialize samples
+		from a uniform distribution to follow the SML algo.
+		'''
+
+		# (while not converged ) loop for num of epochs
+		for ep in range(epochs):
+			# sample from the training set
+			new_samples = self.sample_h_given_v(self.training_data)
+			for i in range(k):
+				# sample from the training set
+
+				# gibbs update by calling gibbs sampling
+				# for steps in k-iterations:
+					# gibbs update
+				# calculating the gredient
+				# update the weights
+		pass
+
 	def gibbs_sample(self):
 		'''
-		This function perform the gibbs sampling
+		This function perform the gibbs sampling, Return a sampled version of the input.
 		'''
+		# update by calling v given h
+		# then call h given v
 		pass
 
-	def positive_phase(self):
-		'''
-		This function to perform the positive phase
-		'''
-		pass
-
-	def negative_phase(self):
-		'''
-		This function to perform the negative phase
-		'''
-		pass
-
-	def update_wrights(self):
+	def update_weights(self):
 		'''
 		This function update the weights according to c-part
 		w = w + lr(+ve Gredient - -ve Gredient)
@@ -87,6 +120,6 @@ class RBM():
 		pass
 
 if __name__ == "__main__":
-	X = load_X_data()
-	Y = load_Y_data()
-	rbm = RBM()
+	training_data = load_X_data()
+	rbm = RBM() # to set the hidden units and visible units
+	rbm.train(training_data)# to set the learning rate and the k num
