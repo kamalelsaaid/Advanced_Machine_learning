@@ -65,13 +65,14 @@ class RBM():
 		# initialize the weights & the hidden/visible units 
 		self.hidden_units = num_hidden
 		self.visible_units = num_visible
-		b_v = np.zeros(self.visible_units) # initialize visible bias with 0s
-		c_h = np.zeros(self.hidden_units) # initialize hidden bias with 0s
+		self.b = np.zeros(self.visible_units) # initialize visible bias with 0s
+		self.c = np.zeros(self.hidden_units) # initialize hidden bias with 0s
 		# initialize weights
+		# self.w
 
 	def train(self,lr = 0.01,k = 1,epochs=1000,training_data):
 		self.lr = lr
-		# set lr and k (DONE)
+		# set lr and k
 		self.training_data = training_data
 		# initialize set of samples from a uniform distribution
 		'''
@@ -82,42 +83,53 @@ class RBM():
 		# (while not converged ) loop for num of epochs
 		for ep in range(epochs):
 			# sample from the training set
-			new_samples = self.sample_h_given_v(self.training_data)
+			h_new_samples = self.sample_h_given_v(self.training_data)
+			# gibbs update by calling gibbs sampling (NOT YET)
+	
+			# for steps in k-iterations:
 			for i in range(k):
-				# sample from the training set
+				# gibbs update
+				v_samples,h_samples = self.gibbs_sample(h_new_samples)
+				
+			# update the weights
+			self.update_weights(new_samples,v_samples,h_samples)
+		
 
-				# gibbs update by calling gibbs sampling
-				# for steps in k-iterations:
-					# gibbs update
-				# calculating the gredient
-				# update the weights
-		pass
-
-	def gibbs_sample(self):
+	def gibbs_sample(self,old_h_samples):
 		'''
 		This function perform the gibbs sampling, Return a sampled version of the input.
 		'''
 		# update by calling v given h
+		v_samples=self.sample_v_given_h(old_h_samples)
 		# then call h given v
-		pass
+		h_samples = self.sample_h_given_v(v_samples)
 
-	def update_weights(self):
+		return v_samples,h_samples
+
+	def update_weights(self,new_sample,v_samples,h_samples):
 		'''
 		This function update the weights according to c-part
 		w = w + lr(+ve Gredient - -ve Gredient)
 		'''
+		self.weights += self.lr * (np.dot(self.training_data.T, new_sample)
+			- np.dot(v_samples.T, ... )) #TODO: the -ve phase
+		self.b += self.lr * np.mean(self.training_data - v_samples, axis=0)
+        self.c += self.lr * np.mean(new_samples - ...., axis=0) #TODO: the c bias
 
-	def sample_h_given_v(self):
+	def sample_h_given_v(self,v_samples):
 		'''
 		sample hidden prob. given visible p(h|v)
 		'''
-		pass
+		pre_sigmoid = np.dot(v_samples,self.w) + self.c
+		sigmoided = sigmoid_fun(pre_sigmoid)
 
-	def sample_v_given_h(self):
+
+	def sample_v_given_h(self,h_samples):
 		'''
 		sample visible prob. given hidden p(v|h)
 		'''
-		pass
+		pre_sigmoid = np.dot(h_samples,self.w) + self.b
+		sigmoided = sigmoid_fun(pre_sigmoid)
 
 if __name__ == "__main__":
 	training_data = load_X_data()
