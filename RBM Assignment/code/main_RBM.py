@@ -67,32 +67,40 @@ class RBM():
 		self.visible_units = num_visible
 		self.b = np.zeros(self.visible_units) # initialize visible bias with 0s
 		self.c = np.zeros(self.hidden_units) # initialize hidden bias with 0s
-		# initialize weights
-		# self.w
+		# initialize weights uniformaly
+		uniform_w = 1. / num_visible
+		self.w = np.array(...uniform(low = -uniform_w,high = uniform_w,
+			size = (num_visible,num_hidden))) #TODO
+		
 
 	def train(self,lr = 0.01,k = 1,epochs=1000,training_data):
 		self.lr = lr
 		# set lr and k
 		self.training_data = training_data
-		# initialize set of samples from a uniform distribution
+		# TODO: generate random samples from a uniform distribution
 		'''
 		TODO: change the sampling from the training set to initialize samples
 		from a uniform distribution to follow the SML algo.
 		'''
 
-		# (while not converged ) loop for num of epochs
+		# (repeat until converged ) loop for num of epochs
 		for ep in range(epochs):
+			''' +ve phase '''
 			# sample from the training set
-			h_new_samples = self.sample_h_given_v(self.training_data)
-			# gibbs update by calling gibbs sampling (NOT YET)
-	
+			_,h_new_samples = self.sample_h_given_v(self.training_data)
+			# gibbs update by +ve gredient
+			pos_G = np.dot(self.training_data.T, h_1st_sample)
+
+			''' -ve phase '''
 			# for steps in k-iterations:
 			for i in range(k):
 				# gibbs update
-				v_samples,h_samples = self.gibbs_sample(h_new_samples)
-				
+				v_samples,h_samples,prob_v,prob_h = self.gibbs_sample(h_new_samples)
+			
+			# gibbs update by -ve gredient
+			neg_G = np.dot(v_samples.T, prob_h ) 
 			# update the weights
-			self.update_weights(new_samples,v_samples,h_samples)
+			self.update_weights(pos_G,neg_G,h_new_samples,v_samples,prob_h)
 		
 
 	def gibbs_sample(self,old_h_samples):
@@ -100,28 +108,30 @@ class RBM():
 		This function perform the gibbs sampling, Return a sampled version of the input.
 		'''
 		# update by calling v given h
-		v_samples=self.sample_v_given_h(old_h_samples)
+		prob_v,v_samples=self.sample_v_given_h(old_h_samples)
 		# then call h given v
-		h_samples = self.sample_h_given_v(v_samples)
+		prob_h,h_samples = self.sample_h_given_v(v_samples)
 
-		return v_samples,h_samples
+		return v_samples,h_samples,prob_v,prob_h
 
-	def update_weights(self,new_sample,v_samples,h_samples):
+	def update_weights(self,pos_G,neg_G,h_1st_sample,v_samples,prob_h):
 		'''
 		This function update the weights according to c-part
 		w = w + lr(+ve Gredient - -ve Gredient)
 		'''
-		self.weights += self.lr * (np.dot(self.training_data.T, new_sample)
-			- np.dot(v_samples.T, ... )) #TODO: the -ve phase
+				
+		self.w += self.lr * (pos_G - neg_G)
 		self.b += self.lr * np.mean(self.training_data - v_samples, axis=0)
-        self.c += self.lr * np.mean(new_samples - ...., axis=0) #TODO: the c bias
+        self.c += self.lr * np.mean(h_1st_sample - prob_h, axis=0)
 
 	def sample_h_given_v(self,v_samples):
 		'''
 		sample hidden prob. given visible p(h|v)
 		'''
 		pre_sigmoid = np.dot(v_samples,self.w) + self.c
-		sigmoided = sigmoid_fun(pre_sigmoid)
+		prob_h = sigmoid_fun(pre_sigmoid)
+		h_new_samples = #TODO
+		return prob_h,h_new_samples
 
 
 	def sample_v_given_h(self,h_samples):
@@ -129,7 +139,9 @@ class RBM():
 		sample visible prob. given hidden p(v|h)
 		'''
 		pre_sigmoid = np.dot(h_samples,self.w) + self.b
-		sigmoided = sigmoid_fun(pre_sigmoid)
+		prob_v = sigmoid_fun(pre_sigmoid)
+		v_new_samples = #TODO
+		return prob_v,v_new_samples
 
 if __name__ == "__main__":
 	training_data = load_X_data()
