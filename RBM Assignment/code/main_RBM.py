@@ -26,13 +26,13 @@ algo:
     initialize set of samples from a uniform distribution
     while not converged do
         sample from the training set
-        g = (1/m) * sum( delta_log_un_normalized_prob(normalized( x(i) )) )
+        g_pos = (1/m) * sum( delta_log_un_normalized_prob(normalized( x(i) )) )
 
         for i = 1 to k do 
             for j = 1 to m do 
                 un_normalized(x(j) ) = gibbs_update( un_normalized(x(j)) )
-        g = g - (1/m) * sum( delta_log_un_normalized_prob(un_normalized(x(i))) )
-        w = w + lr*g
+        g_neg = (1/m) * sum( delta_log_un_normalized_prob(un_normalized(x(i))) )
+        w = w + lr*(g_pos - g_neg)
 """
 
 
@@ -69,8 +69,7 @@ class RBM():
 		self.c = np.zeros(self.hidden_units) # initialize hidden bias with 0s
 		# initialize weights uniformaly
 		uniform_w = 1. / num_visible
-		self.w = np.array(...uniform(low = -uniform_w,high = uniform_w,
-			size = (num_visible,num_hidden))) #TODO
+		self.w = np.random.rand(num_visible,num_hidden) # use random array to do uniforming variables
 		
 
 	def train(self,lr = 0.01,k = 1,epochs=1000,training_data):
@@ -130,7 +129,7 @@ class RBM():
 		'''
 		pre_sigmoid = np.dot(v_samples,self.w) + self.c
 		prob_h = sigmoid_fun(pre_sigmoid)
-		h_new_samples = #TODO
+		h_new_samples = np.random.binomial(size = self.hidden_units,n=1,p = prob_h) # calculate the new hidden samples
 		return prob_h,h_new_samples
 
 
@@ -140,10 +139,15 @@ class RBM():
 		'''
 		pre_sigmoid = np.dot(h_samples,self.w) + self.b
 		prob_v = sigmoid_fun(pre_sigmoid)
-		v_new_samples = #TODO
+		v_new_samples = np.random.binomial(size = self.visible_units,n=1, p = prob_v) # calculate the new visible samples
 		return prob_v,v_new_samples
+
+	def test(self):
+		# to test the rbm.
+		pass
 
 if __name__ == "__main__":
 	training_data = load_X_data()
 	rbm = RBM() # to set the hidden units and visible units
 	rbm.train(training_data)# to set the learning rate and the k num
+	rbm.test()
