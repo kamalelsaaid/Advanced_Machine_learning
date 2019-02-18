@@ -1,0 +1,6 @@
+3000 epochs
+16 samples or higher for 512 hidden units
+8 samples for 256 hidden units or less hidden units
+
+learning rate range between 0.1 and 0.01, doesn't give a solid difference, 
+so we should go for decay learning rate with a min & max initial value
